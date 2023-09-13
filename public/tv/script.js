@@ -27,7 +27,7 @@ var colors = ["#FF9AA2", "#FFB7B2", "#FFDAC1", "#E2F0CB", "#B5EAD7", "#C7CEEA"],
   RECTANGLE_HEIGHT_HALF = RECTANGLE_HEIGHT / 2,
   PADDINGX = 10,
   PADDINGY = 20, //the gap between rectangles
-  SCALE_FACTOR = 900; //small number = icons get small faster, smaller number = icons get small slowly
+  SCALE_FACTOR = 1000; //small number = icons get small faster, smaller number = icons get small slowly
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight; //set canvas to full size of the window
@@ -47,8 +47,8 @@ y = 0;
 for (i = 0; i < VERTICAL; i++) {
   for (j = 0; j < HORIZONTAL; j++) {
     var randomColor = colors[Math.round(Math.random() * (colors.length - 1))]; //generating a random color for the menu rectangle
-
-    rectangles.push({ x: x, y: y, color: randomColor }); //add rectangle with x and y coordinates and color to the array
+    const imageSrc = "/images/sample.jpeg";
+    rectangles.push({ x: x, y: y, color: randomColor, imageSrc: imageSrc }); // Replace with the actual image path }); //add rectangle with x and y coordinates and color to the array
     x += RECTANGLE_WIDTH + PADDINGX; //increase x for the next rectangle
   }
 
@@ -62,7 +62,43 @@ for (i = 0; i < VERTICAL; i++) {
   y += RECTANGLE_HEIGHT + PADDINGY; //increase y for the next rectangle row
 }
 
+let animationRunning = true;
+
+function pauseAnimation() {
+  animationRunning = false;
+}
+
+// To resume the animation:
+
+function resumeAnimation() {
+  animationRunning = true;
+  // draw(); // Start the animation again
+}
+
+function createImage(i) {
+  // creates a new i each time it is called
+  var image = new Image();
+  image.src = "/images/sample.jpeg";
+  // image.src = rectangles[i].imageSrc ;
+  image.onload = function () {
+    console.log("Image loaded" + i);
+    ctx.drawImage(
+      image,
+      -RECTANGLE_WIDTH / 2,
+      -RECTANGLE_HEIGHT / 2,
+      RECTANGLE_WIDTH,
+      RECTANGLE_HEIGHT
+    );
+  };
+}
+
 function draw() {
+  // if (!animationRunning) {
+  //   console.log("animation paused");
+  //   return; // Stop drawing if animation is paused
+  // }
+
+  console.log("Drawing...");
   ctx.clearRect(0, 0, canvas.width, canvas.height); //clear the canvas
 
   ctx.save();
@@ -93,6 +129,7 @@ function draw() {
       RECTANGLE_WIDTH,
       RECTANGLE_HEIGHT
     ); // draw rectangle centered at (0, 0)
+
     ctx.font = "16px Arial";
     ctx.fillStyle = "#000";
     //ctx.fillText (i, 50,0 + (i * 20));
@@ -100,12 +137,12 @@ function draw() {
     ctx.fillText(i, 0, 0);
     ctx.restore();
   }
-
   ctx.restore();
   requestAnimationFrame(draw);
+  // animationRunning = false;
 }
 
-draw();
+window.onload = draw();
 
 function getDistance(rectangle) {
   var dx, dy, dist;
@@ -199,20 +236,28 @@ var socket = io();
 
 socket.on("move mouse", (data) => {
   //received message
+  resumeAnimation();
   handleMouse(data);
 });
 
 socket.on("handle click", (data) => {
   //received message
+  resumeAnimation();
   handleClick(data);
 });
 
 socket.on("touchmove", (data) => {
   //received message
+  resumeAnimation();
   handleSwipe(data);
 });
 
 socket.on("touchstart", (data) => {
   //received message
+  resumeAnimation();
   handleTouch(data);
+});
+
+socket.on("pauseanimation", () => {
+  pauseAnimation();
 });

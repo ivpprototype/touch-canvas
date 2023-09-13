@@ -152,6 +152,7 @@ function handleSwipe(e) {
 
 window.addEventListener("touchend", () => {
   window.removeEventListener("touchmove", handleSwipe);
+  socket.emit("pauseanimation");
 });
 
 window.addEventListener("mousedown", handleClick);
@@ -195,6 +196,7 @@ function handleRelease() {
   window.removeEventListener("mouseup", handleRelease);
   window.removeEventListener("mousemove", handleMouse);
   canvas.style.cursor = "grab";
+  socket.emit("pauseanimation");
 }
 
 window.addEventListener("resize", () => {

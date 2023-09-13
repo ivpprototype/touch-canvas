@@ -22,6 +22,9 @@ io.on("connection", (socket) => {
   socket.on("touchmove", (data) => {
     io.emit("touchmove", data);
   });
+  // socket.on("pauseanimation", () => {
+  //   io.emit("pauseanimation");
+  // });
 });
 
 app.use(express.static(path.resolve("./public/")));
@@ -30,6 +33,6 @@ app.get("/", (req, res) => {
   return res.sendFile("/public/index.html");
 });
 
-app.listen(9000, () => console.log("Server listening on port 9000"));
+server.listen(9000, () => console.log("Server listening on port 9000"));
 
-module.exports = app;
+// module.exports = app;
