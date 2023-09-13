@@ -30,6 +30,4 @@ app.get("/", (req, res) => {
   return res.sendFile("/public/index.html");
 });
 
-app.listen(9000, () => console.log("Server listening on port 9000"));
-
-module.exports = app;
+server.listen(9000, () => console.log("Server listening on port 9000"));
