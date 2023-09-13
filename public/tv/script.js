@@ -1,6 +1,13 @@
 const canvas = document.querySelector("#canvas");
 const ctx = canvas.getContext("2d"); //get the canvas from html
 
+var contents = []; // array to hold loaded content images
+var contentUrls = [
+  "https://picsum.photos/320/180",
+  "https://picsum.photos/320/180",
+  // Add more content image URLs here
+];
+
 var colors = ["#FF9AA2", "#FFB7B2", "#FFDAC1", "#E2F0CB", "#B5EAD7", "#C7CEEA"],
   mouseX = 0,
   mouseY = 0, //save current mouse/finger position
@@ -25,8 +32,8 @@ var colors = ["#FF9AA2", "#FFB7B2", "#FFDAC1", "#E2F0CB", "#B5EAD7", "#C7CEEA"],
   RECTANGLE_WIDTH_HALF = RECTANGLE_WIDTH / 2,
   RECTANGLE_HEIGHT = 180, //size of rectangles
   RECTANGLE_HEIGHT_HALF = RECTANGLE_HEIGHT / 2,
-  PADDINGX = 10,
-  PADDINGY = 20, //the gap between rectangles
+  PADDINGX = 20,
+  PADDINGY = 50, //the gap between rectangles
   SCALE_FACTOR = 1000; //small number = icons get small faster, smaller number = icons get small slowly
 
 canvas.width = window.innerWidth;
@@ -44,62 +51,59 @@ centerY = canvas.height / 2;
 x = 0;
 y = 0;
 
-for (i = 0; i < VERTICAL; i++) {
-  for (j = 0; j < HORIZONTAL; j++) {
-    var randomColor = colors[Math.round(Math.random() * (colors.length - 1))]; //generating a random color for the menu rectangle
-    const imageSrc = "/images/sample.jpeg";
-    rectangles.push({ x: x, y: y, color: randomColor, imageSrc: imageSrc }); // Replace with the actual image path }); //add rectangle with x and y coordinates and color to the array
-    x += RECTANGLE_WIDTH + PADDINGX; //increase x for the next rectangle
+function getImageOpacity(scale) {
+  if (scale < 0.9 && scale >= 0.8) {
+    return 0.8;
+  }
+  if (scale < 0.8 && scale >= 0.6) {
+    return 0.6;
+  }
+  if (scale < 0.6 && scale > 0) {
+    return 0.3;
+  }
+  return 1;
+}
+
+// Load content images
+function loadImages() {
+  var loadedContentImages = 0;
+
+  for (var j = 0; j < HORIZONTAL * VERTICAL; j++) {
+    var contentImg = new Image();
+    contentImg.src = contentUrls[0] + "?random=" + j;
+    contentImg.onload = function () {
+      loadedContentImages++;
+      if (loadedContentImages === HORIZONTAL * VERTICAL) {
+        initializeImages();
+      }
+    };
+    contents.push(contentImg);
+  }
+}
+
+function initializeImages() {
+  for (i = 0; i < VERTICAL; i++) {
+    for (j = 0; j < HORIZONTAL; j++) {
+      var contentIndex = i * HORIZONTAL + j;
+      console.log(contentIndex);
+      rectangles.push({ x: x, y: y, content: contents[contentIndex] });
+      x += RECTANGLE_WIDTH + PADDINGX;
+    }
+
+    if (i % 2 == 0) {
+      x = RECTANGLE_WIDTH / 2;
+    } else {
+      x = 0;
+    }
+
+    y += RECTANGLE_HEIGHT + PADDINGY;
   }
 
-  if (i % 2 == 0) {
-    //x = PADDINGX / 2 + RECTANGLE_WIDTH; //if its the second, fourth, sixth etc. row then move the row to right
-    x = RECTANGLE_WIDTH / 2;
-  } else {
-    x = 0;
-  }
-
-  y += RECTANGLE_HEIGHT + PADDINGY; //increase y for the next rectangle row
-}
-
-let animationRunning = true;
-
-function pauseAnimation() {
-  animationRunning = false;
-}
-
-// To resume the animation:
-
-function resumeAnimation() {
-  animationRunning = true;
-  // draw(); // Start the animation again
-}
-
-function createImage(i) {
-  // creates a new i each time it is called
-  var image = new Image();
-  image.src = "/images/sample.jpeg";
-  // image.src = rectangles[i].imageSrc ;
-  image.onload = function () {
-    console.log("Image loaded" + i);
-    ctx.drawImage(
-      image,
-      -RECTANGLE_WIDTH / 2,
-      -RECTANGLE_HEIGHT / 2,
-      RECTANGLE_WIDTH,
-      RECTANGLE_HEIGHT
-    );
-  };
+  draw();
 }
 
 function draw() {
-  // if (!animationRunning) {
-  //   console.log("animation paused");
-  //   return; // Stop drawing if animation is paused
-  // }
-
-  console.log("Drawing...");
-  ctx.clearRect(0, 0, canvas.width, canvas.height); //clear the canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   ctx.save();
 
@@ -108,41 +112,35 @@ function draw() {
   for (i = 0; i < rectangles.length; i++) {
     ctx.save();
     scale = getDistance(rectangles[i]);
-    //ctx.translate(rectangles[i].x + RECTANGLE_WIDTH / 2, rectangles[i].y + RECTANGLE_HEIGHT / 2); // translate to the center of the rectangle
-    //ctx.scale(scale, scale);
-
-    // ctx.translate(rectangles[i].x, rectangles[i].y);
-    // ctx.translate(RECTANGLE_WIDTH_HALF, RECTANGLE_HEIGHT_HALF);
-    // ctx.scale(scale, scale);
-    // ctx.translate(-RECTANGLE_WIDTH_HALF, -RECTANGLE_HEIGHT_HALF / 2);
-    // ctx.translate(RECTANGLE_WIDTH_HALF, 0);
-
     ctx.translate(rectangles[i].x, rectangles[i].y);
-    // ctx.translate(RECTANGLE_WIDTH_HALF, RECTANGLE_HEIGHT_HALF);
     ctx.scale(scale, scale);
-    // ctx.translate(-RECTANGLE_WIDTH_HALF, -RECTANGLE_HEIGHT_HALF / 2);
 
-    ctx.fillStyle = rectangles[i].color;
-    ctx.fillRect(
+    // Create a path for the rectangle
+    ctx.beginPath();
+    ctx.rect(
       -RECTANGLE_WIDTH / 2,
       -RECTANGLE_HEIGHT / 2,
       RECTANGLE_WIDTH,
       RECTANGLE_HEIGHT
-    ); // draw rectangle centered at (0, 0)
+    );
+    ctx.closePath();
+    ctx.clip(); // Clip to the rectangle path
+    ctx.globalAlpha = getImageOpacity(scale);
+    // Draw the content image within the clipped area
+    ctx.drawImage(
+      rectangles[i].content,
+      -RECTANGLE_WIDTH / 2,
+      -RECTANGLE_HEIGHT / 2,
+      RECTANGLE_WIDTH,
+      RECTANGLE_HEIGHT
+    );
 
-    ctx.font = "16px Arial";
-    ctx.fillStyle = "#000";
-    //ctx.fillText (i, 50,0 + (i * 20));
-    ctx.textAlign = "center";
-    ctx.fillText(i, 0, 0);
     ctx.restore();
   }
+
   ctx.restore();
   requestAnimationFrame(draw);
-  // animationRunning = false;
 }
-
-window.onload = draw();
 
 function getDistance(rectangle) {
   var dx, dy, dist;
@@ -155,6 +153,8 @@ function getDistance(rectangle) {
 
   return scale;
 }
+
+loadImages();
 
 window.addEventListener("touchstart", handleTouch);
 
@@ -236,25 +236,21 @@ var socket = io();
 
 socket.on("move mouse", (data) => {
   //received message
-  resumeAnimation();
   handleMouse(data);
 });
 
 socket.on("handle click", (data) => {
   //received message
-  resumeAnimation();
   handleClick(data);
 });
 
 socket.on("touchmove", (data) => {
   //received message
-  resumeAnimation();
   handleSwipe(data);
 });
 
 socket.on("touchstart", (data) => {
   //received message
-  resumeAnimation();
   handleTouch(data);
 });
 
