@@ -3,9 +3,26 @@ const ctx = canvas.getContext("2d"); //get the canvas from html
 
 var contents = []; // array to hold loaded content images
 var contentUrls = [
-  "https://picsum.photos/320/180",
-  "https://picsum.photos/320/180",
-  // Add more content image URLs here
+  "http://image.tmdb.org/t/p/original/53z2fXEKfnNg2uSOPss2unPBGX1.jpg",
+  "http://image.tmdb.org/t/p/original/5mzr6JZbrqnqD8rCEvPhuCE5Fw2.jpg",
+  "http://image.tmdb.org/t/p/original/2ii07lSwHarg0gWnJoCYL3Gyd1j.jpg",
+  "http://image.tmdb.org/t/p/original/eMPxmNvJjxVZIQWI2t1VmNC5IuR.jpg",
+  "http://image.tmdb.org/t/p/original/3mrli3xsGrAieQks7KsBUm2LpCg.jpg",
+  "http://image.tmdb.org/t/p/original/ctMserH8g2SeOAnCw5gFjdQF8mo.jpg",
+  "http://image.tmdb.org/t/p/original/4fLZUr1e65hKPPVw0R3PmKFKxj1.jpg",
+  "http://image.tmdb.org/t/p/original/8FQeHmusSN2hk3bICf16x5GFQvT.jpg",
+  "http://image.tmdb.org/t/p/original/rTJ8LLzT9NPRJA2dnQs0241bMRn.jpg",
+  "http://image.tmdb.org/t/p/original/jn7U0C8ZKjL1M8skZ5lBdSLYcST.jpg",
+  "http://image.tmdb.org/t/p/original/w2nFc2Rsm93PDkvjY4LTn17ePO0.jpg",
+  "http://image.tmdb.org/t/p/original/2vFuG6bWGyQUzYS9d69E5l85nIz.jpg",
+  "http://image.tmdb.org/t/p/original/qEm4FrkGh7kGoEiBOyGYNielYVc.jpg",
+  "http://image.tmdb.org/t/p/original/9m161GawbY3cWxe6txd1NOHTjd0.jpg",
+  "http://image.tmdb.org/t/p/original/fgsHxz21B27hOOqQBiw9L6yWcM7.jpg",
+  "http://image.tmdb.org/t/p/original/2QL5j6mB4ZpyBcVr0WO9H9MQGBu.jpg",
+  "http://image.tmdb.org/t/p/original/yF1eOkaYvwiORauRCPWznV9xVvi.jpg",
+  "http://image.tmdb.org/t/p/original/4XM8DUTQb3lhLemJC51Jx4a2EuA.jpg",
+  "http://image.tmdb.org/t/p/original/sC8YOcp8tOQ5s9RgGsZnLDGTZSa.jpg",
+  "http://image.tmdb.org/t/p/original/4HodYYKEIsGOdinkGi2Ucz6X9i0.jpg",
 ];
 
 var colors = ["#FF9AA2", "#FFB7B2", "#FFDAC1", "#E2F0CB", "#B5EAD7", "#C7CEEA"],
@@ -28,7 +45,7 @@ var colors = ["#FF9AA2", "#FFB7B2", "#FFDAC1", "#E2F0CB", "#B5EAD7", "#C7CEEA"],
   clicked, //for saving the mouse state
   HORIZONTAL = 10,
   VERTICAL = 10, //how many rectangles will be on the canvas
-  RECTANGLE_WIDTH = 360,
+  RECTANGLE_WIDTH = 320,
   RECTANGLE_WIDTH_HALF = RECTANGLE_WIDTH / 2,
   RECTANGLE_HEIGHT = 180, //size of rectangles
   RECTANGLE_HEIGHT_HALF = RECTANGLE_HEIGHT / 2,
@@ -51,26 +68,47 @@ centerY = canvas.height / 2;
 x = 0;
 y = 0;
 
+function lerp(start, end, t) {
+  return start * (1 - t) + end * t;
+}
+
 function getImageOpacity(scale) {
-  if (scale < 0.9 && scale >= 0.8) {
-    return 0.8;
+  if (scale >= 0 && scale < 0.6) {
+    return lerp(0, 0.3, scale / 0.6);
   }
-  if (scale < 0.8 && scale >= 0.6) {
-    return 0.6;
+
+  if (scale >= 0.6 && scale < 0.8) {
+    return lerp(0.3, 0.6, (scale - 0.6) / 0.2);
   }
-  if (scale < 0.6 && scale > 0) {
-    return 0.3;
+
+  if (scale >= 0.8 && scale < 0.9) {
+    return lerp(0.6, 0.8, (scale - 0.8) / 0.1);
   }
+
+  if (scale >= 0.9) {
+    return 0.9;
+  }
+
   return 1;
+}
+
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min) + min); // The maximum is exclusive and the minimum is inclusive
 }
 
 // Load content images
 function loadImages() {
-  var loadedContentImages = 0;
+  let loadedContentImages = 0;
 
-  for (var j = 0; j < HORIZONTAL * VERTICAL; j++) {
-    var contentImg = new Image();
-    contentImg.src = contentUrls[0] + "?random=" + j;
+  for (let j = 0; j < HORIZONTAL * VERTICAL; j++) {
+    let contentImg = new Image();
+
+    //get a random index from 0 to length of posters
+    const imageIndex = getRandomInt(0, contentUrls.length);
+    contentImg.src = contentUrls[imageIndex];
+    // contentImg.src = contentUrls[0] + "?random=" + j;
     contentImg.onload = function () {
       loadedContentImages++;
       if (loadedContentImages === HORIZONTAL * VERTICAL) {
@@ -117,11 +155,19 @@ function draw() {
 
     // Create a path for the rectangle
     ctx.beginPath();
-    ctx.rect(
+    // ctx.rect(
+    //   -RECTANGLE_WIDTH / 2,
+    //   -RECTANGLE_HEIGHT / 2,
+    //   RECTANGLE_WIDTH,
+    //   RECTANGLE_HEIGHT
+    // );
+
+    ctx.roundRect(
       -RECTANGLE_WIDTH / 2,
       -RECTANGLE_HEIGHT / 2,
       RECTANGLE_WIDTH,
-      RECTANGLE_HEIGHT
+      RECTANGLE_HEIGHT,
+      12
     );
     ctx.closePath();
     ctx.clip(); // Clip to the rectangle path
@@ -149,7 +195,7 @@ function getDistance(rectangle) {
   dist = Math.sqrt(dx * dx + dy * dy);
   scale = 1.2 - dist / SCALE_FACTOR;
 
-  scale = scale > 0 ? scale : 0.5;
+  scale = scale > 0 ? scale : 0.1;
 
   return scale;
 }
