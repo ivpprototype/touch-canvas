@@ -206,7 +206,7 @@ function loadImages() {
     //get a random index from 0 to length of posters
     // const imageIndex = getRandomInt(0, contentUrls.length);
     contentImg.src = "/posters/" + contentUrls[j];
-    console.log(contentImg.src);
+    // console.log(contentImg.src);
     // contentImg.src = contentUrls[0] + "?random=" + j;
     contentImg.onload = function () {
       loadedContentImages++;
@@ -296,6 +296,26 @@ function getDistance(rectangle) {
   scale = scale > 0 ? scale : 0.1;
 
   return scale;
+}
+
+function scaleCanvas(gestureType, touchScale) {
+  console.log(touchScale);
+  let can = document.getElementById("canvas");
+  let aScale;
+  if (gestureType === "expand") aScale = touchScale / 100 + 1.2;
+  else aScale = touchScale / 100;
+  can.style.transform = "scale(" + aScale + "," + aScale + ")";
+  // RECTANGLE_WIDTH += aScale;
+  // RECTANGLE_HEIGHT = RECTANGLE_WIDTH / (16 / 9);
+  // offsetX =
+  //   (canvas.width -
+  //     RECTANGLE_WIDTH * HORIZONTAL -
+  //     PADDINGX * (HORIZONTAL - 1)) /
+  //   2; //center the rectangles horizontally
+  // offsetY =
+  //   (canvas.height - RECTANGLE_HEIGHT * VERTICAL - PADDINGY * (VERTICAL - 1)) /
+  //   2; //center the rectangles vertically
+  // initializeImages();
 }
 
 loadImages();
@@ -398,6 +418,14 @@ socket.on("touchstart", (data) => {
   handleTouch(data);
 });
 
-socket.on("pauseanimation", () => {
-  pauseAnimation();
+// socket.on("pauseanimation", () => {
+//   pauseAnimation();
+// });
+
+socket.on("expand", (data) => {
+  scaleCanvas("expand", data);
+});
+
+socket.on("pinch", (data) => {
+  scaleCanvas("pinch", data);
 });

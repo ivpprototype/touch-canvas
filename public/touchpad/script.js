@@ -29,6 +29,7 @@ var colors = ["#000000"],
   PADDINGX = 10,
   PADDINGY = 20, //the gap between rectangles
   SCALE_FACTOR = 900; //small number = icons get small faster, smaller number = icons get small slowly
+initialDistance = null;
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight; //set canvas to full size of the window
@@ -122,11 +123,23 @@ function getDistance(rectangle) {
 window.addEventListener("touchstart", handleTouch);
 
 function handleTouch(e) {
+  e.preventDefault();
+
   window.addEventListener("touchmove", handleSwipe);
   startX = e.touches[0].clientX;
   startY = e.touches[0].clientY;
   oldOffsetX = offsetX;
   oldOffsetY = offsetY;
+
+  const touches = e.touches;
+  // Calculate the initial distance between the two touch points
+  if (touches.length === 2) {
+    const x1 = touches[0].pageX;
+    const y1 = touches[0].pageY;
+    const x2 = touches[1].pageX;
+    const y2 = touches[1].pageY;
+    initialDistance = Math.hypot(x2 - x1, y2 - y1);
+  }
 
   //Package touch data and send it over the socket
   let touchPayload = {
@@ -137,10 +150,30 @@ function handleTouch(e) {
 }
 
 function handleSwipe(e) {
+  e.preventDefault();
   mouseX = e.changedTouches[0].clientX;
   mouseY = e.changedTouches[0].clientY;
   offsetX = oldOffsetX + mouseX - startX;
   offsetY = oldOffsetY + mouseY - startY;
+
+  // Calculate the current distance between the two touch points
+  if (initialDistance !== null && e.touches.length === 2) {
+    const x1 = e.touches[0].pageX;
+    const y1 = e.touches[0].pageY;
+    const x2 = e.touches[1].pageX;
+    const y2 = e.touches[1].pageY;
+
+    const currentDistance = Math.hypot(x2 - x1, y2 - y1);
+
+    // Determine whether it's an expand or pinch gesture
+    if (currentDistance > initialDistance) {
+      console.log("Expand", currentDistance, initialDistance);
+      socket.emit("expand", currentDistance);
+    } else {
+      console.log("Pinch", currentDistance, initialDistance);
+      socket.emit("pinch", currentDistance);
+    }
+  }
 
   //Package touch data and send it over the socket
   let touchPayload = {

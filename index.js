@@ -22,9 +22,12 @@ io.on("connection", (socket) => {
   socket.on("touchmove", (data) => {
     io.emit("touchmove", data);
   });
-  // socket.on("pauseanimation", () => {
-  //   io.emit("pauseanimation");
-  // });
+  socket.on("expand", (data) => {
+    io.emit("expand", data);
+  });
+  socket.on("pinch", (data) => {
+    io.emit("pinch", data);
+  });
 });
 
 app.use(express.static(path.resolve("./public/")));
