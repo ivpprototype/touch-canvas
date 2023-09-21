@@ -105,7 +105,7 @@ window.addEventListener("touchend", () => {
 window.addEventListener("mousedown", handleClick);
 
 function handleClick(e) {
-  // e.preventDefault();
+  e.preventDefault();
   window.addEventListener("mousemove", handleMouse);
   window.addEventListener("mouseup", handleRelease);
   startX = e.clientX;
