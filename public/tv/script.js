@@ -190,12 +190,6 @@ function getImageOpacity(scale) {
   return 1;
 }
 
-function getRandomInt(min, max) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min) + min); // The maximum is exclusive and the minimum is inclusive
-}
-
 // Load content images
 function loadImages() {
   let loadedContentImages = 0;
@@ -203,11 +197,7 @@ function loadImages() {
   for (let j = 0; j < HORIZONTAL * VERTICAL; j++) {
     let contentImg = new Image();
 
-    //get a random index from 0 to length of posters
-    // const imageIndex = getRandomInt(0, contentUrls.length);
     contentImg.src = "/posters/" + contentUrls[j];
-    // console.log(contentImg.src);
-    // contentImg.src = contentUrls[0] + "?random=" + j;
     contentImg.onload = function () {
       loadedContentImages++;
       if (loadedContentImages === HORIZONTAL * VERTICAL) {
@@ -253,12 +243,6 @@ function draw() {
 
     // Create a path for the rectangle
     ctx.beginPath();
-    // ctx.rect(
-    //   -RECTANGLE_WIDTH / 2,
-    //   -RECTANGLE_HEIGHT / 2,
-    //   RECTANGLE_WIDTH,
-    //   RECTANGLE_HEIGHT
-    // );
 
     ctx.roundRect(
       -RECTANGLE_WIDTH / 2,
@@ -298,34 +282,9 @@ function getDistance(rectangle) {
   return scale;
 }
 
-function scaleCanvas(gestureType, touchScale) {
-  console.log(touchScale);
-  let can = document.getElementById("canvas");
-  let aScale;
-  if (gestureType === "expand") aScale = touchScale / 100 + 1.2;
-  else aScale = touchScale / 100;
-  can.style.transform = "scale(" + aScale + "," + aScale + ")";
-  // RECTANGLE_WIDTH += aScale;
-  // RECTANGLE_HEIGHT = RECTANGLE_WIDTH / (16 / 9);
-  // offsetX =
-  //   (canvas.width -
-  //     RECTANGLE_WIDTH * HORIZONTAL -
-  //     PADDINGX * (HORIZONTAL - 1)) /
-  //   2; //center the rectangles horizontally
-  // offsetY =
-  //   (canvas.height - RECTANGLE_HEIGHT * VERTICAL - PADDINGY * (VERTICAL - 1)) /
-  //   2; //center the rectangles vertically
-  // initializeImages();
-}
-
 loadImages();
 
-window.addEventListener("touchstart", handleTouch);
-
 function handleTouch(e) {
-  window.addEventListener("touchmove", handleSwipe);
-  // startX = e.touches[0].clientX;
-  // startY = e.touches[0].clientY;
   startX = e.clientX;
   startY = e.clientY;
   oldOffsetX = offsetX;
@@ -333,60 +292,24 @@ function handleTouch(e) {
 }
 
 function handleSwipe(e) {
-  // mouseX = e.changedTouches[0].clientX;
-  // mouseY = e.changedTouches[0].clientY;
   mouseX = e.clientX;
   mouseY = e.clientY;
   offsetX = oldOffsetX + mouseX - startX;
   offsetY = oldOffsetY + mouseY - startY;
 }
 
-window.addEventListener("touchend", () => {
-  window.removeEventListener("touchmove", handleSwipe);
-});
-
-window.addEventListener("mousedown", handleClick);
-
-// function handleClick(e) {
-//   window.addEventListener("mousemove", handleMouse);
-//   window.addEventListener("mouseup", handleRelease);
-//   startX = e.clientX;
-//   startY = e.clientY;
-//   oldOffsetX = offsetX;
-//   oldOffsetY = offsetY;
-//   canvas.style.cursor = "grabbing";
-// }
-
-// function handleMouse(e) {
-//   mouseX = e.clientX;
-//   mouseY = e.clientY;
-//   offsetX = oldOffsetX + mouseX - startX;
-//   offsetY = oldOffsetY + mouseY - startY;
-// }
-
 function handleClick(e) {
-  // window.addEventListener("mousemove", handleMouse);
-  // window.addEventListener("mouseup", handleRelease);
-  //console.log("handle click");
   startX = e.clientX;
   startY = e.clientY;
   oldOffsetX = offsetX;
   oldOffsetY = offsetY;
-  // canvas.style.cursor = "grabbing";
 }
 
 function handleMouse(e) {
-  // console.log("handle mouse");
   mouseX = e.clientX;
   mouseY = e.clientY;
   offsetX = oldOffsetX + mouseX - startX;
   offsetY = oldOffsetY + mouseY - startY;
-}
-
-function handleRelease() {
-  window.removeEventListener("mouseup", handleRelease);
-  window.removeEventListener("mousemove", handleMouse);
-  canvas.style.cursor = "grab";
 }
 
 window.addEventListener("resize", () => {
@@ -417,10 +340,6 @@ socket.on("touchstart", (data) => {
   //received message
   handleTouch(data);
 });
-
-// socket.on("pauseanimation", () => {
-//   pauseAnimation();
-// });
 
 socket.on("expand", (data) => {
   scaleCanvas("expand", data);
